@@ -9,7 +9,8 @@ import java.lang.Math;
  */
 public class StochasticSystems {
     
-    static int[][] s;
+    private static int[][] s;
+    //private static Random rng;
     
     /**
      * @param args the command line arguments
@@ -44,7 +45,8 @@ public class StochasticSystems {
             { -1, -1, -1, -1 }
         };
         //task1();
-        task2();
+        //task2();
+        transitionProb();
         
         /*for(int i = 0; i < s.length; i++) {
             for(int j = 0; j < s[i].length; j++) {
@@ -606,9 +608,176 @@ public class StochasticSystems {
      * check if it adds to 1, if not, then add a self transition
      */
     private static void transitionProb() {
+        Random rng = new Random();
+        
+        double occupationProbA;
+        double occupationProbB;
+        
+        int[][] turtleACoords = new int[][] { { 1, 1 } }; // x, y (i, j) coords
+        int turtleA = 1; // state a
+        
+        int[][] turtleBCoords = new int[][] { { 1, 1 } };
+        int turtleB = 1; // state b
+        
         for(int i = 0; i < s.length; i++) {
             for(int j = 0; j < s[i].length; j++) {
+                turtleACoords[0][0] = i;
+                turtleACoords[0][1] = j;
                 if(s[i][j] != -1) { // ignore the ghost states
+                    double[] accProb = new double[4]; 
+                    double choiceProb = 1.0 / 4.0;
+                    double[] transProb = new double[4]; // 1/4 * accProb
+                    
+                    // find the transition probabilities of NESW (0-3)
+                    for(int k = 0; k < 4; k++) {
+                        switch(k) {
+                            case 0 : {
+                                int x = turtleACoords[0][0];
+                                int y = turtleACoords[0][1];
+                                
+                                turtleBCoords[0][0] = x+1;
+                                turtleBCoords[0][1] = y;
+                                turtleB = s[turtleBCoords[0][0]][turtleBCoords[0][1]];
+                                
+                                //accProb[k] = ;
+                                if(turtleB == -1) {
+                                    // we never want to go into a ghost state so pi(b) will be 0
+                                    accProb[k] = accProbTask2(occupationalProb(x), 0.0);
+                                } else {
+                                    // else the states share the 1/9 chance to be occupied
+                                    accProb[k] = accProbTask2(occupationalProb(x), occupationalProb(x+1));
+                                }
+                                
+                                transProb[k] = (accProb[k] * choiceProb);
+                                break;
+                            }
+                            case 1 : {
+                                int x = turtleACoords[0][0];
+                                int y = turtleACoords[0][1];
+                                
+                                turtleBCoords[0][0] = x;
+                                turtleBCoords[0][1] = y+1;
+                                turtleB = s[turtleBCoords[0][0]][turtleBCoords[0][1]];
+                                
+                                //accProb[k] = ;
+                                if(turtleB == -1) {
+                                    // we never want to go into a ghost state so pi(b) will be 0
+                                    accProb[k] = accProbTask2(occupationalProb(x), 0.0);
+                                } else {
+                                    // else the states share the 1/9 chance to be occupied
+                                    accProb[k] = accProbTask2(occupationalProb(x), occupationalProb(x));
+                                }
+                                
+                                transProb[k] = (accProb[k] * choiceProb);
+                                break;
+                            }
+                            case 2 : {
+                                int x = turtleACoords[0][0];
+                                int y = turtleACoords[0][1];
+                                //System.out.println("x : " + x + " | y : " + y);
+                                turtleBCoords[0][0] = x-1;
+                                turtleBCoords[0][1] = y;
+                                turtleB = s[turtleBCoords[0][0]][turtleBCoords[0][1]];
+                                //System.out.println(turtleB);
+                                
+                                //accProb[k] = ;
+                                if(turtleB == -1) {
+                                    // we never want to go into a ghost state so pi(b) will be 0
+                                    accProb[k] = accProbTask2(occupationalProb(x), 0.0);
+                                } else {
+                                    // else the states share the 1/9 chance to be occupied
+                                    accProb[k] = accProbTask2(occupationalProb(x), occupationalProb(x-1));
+                                }
+                                
+                                transProb[k] = (accProb[k] * choiceProb);
+                                break;
+                            }
+                            case 3 : {
+                                int x = turtleACoords[0][0];
+                                int y = turtleACoords[0][1];
+                                //System.out.println("x : " + x + " | y : " + y);
+                                turtleBCoords[0][0] = x;
+                                turtleBCoords[0][1] = y-1;
+                                turtleB = s[turtleBCoords[0][0]][turtleBCoords[0][1]];
+                                //System.out.println(turtleB);
+                                
+                                //accProb[k] = ;
+                                if(turtleB == -1) {
+                                    // we never want to go into a ghost state so pi(b) will be 0
+                                    accProb[k] = accProbTask2(occupationalProb(x), 0.0);
+                                } else {
+                                    // else the states share the 1/9 chance to be occupied
+                                    accProb[k] = accProbTask2(occupationalProb(x), occupationalProb(x));
+                                }
+                                
+                                transProb[k] = (accProb[k] * choiceProb);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    double sum = 0;
+                    for(int k = 0; k < transProb.length; k++) {
+                        //System.out.println("transProb " + k + ": " + transProb[k]);
+                        sum += transProb[k];
+                    }
+                    
+                    double selfTrans = (1 - sum);
+                    
+                    boolean selfTransFlag = false;
+                    //if(selfTrans == 0) { // no self transition
+                    for(int k = 0; k < transProb.length; k++) {
+                        switch(k) {
+                            case 0 :
+                                if(transProb[k] == 0) {
+                                    if(!selfTransFlag) {
+                                        selfTransFlag = true;
+                                        System.out.println("P(" + s[i][j] + "-> " + s[i][j]
+                                        + ") = " + selfTrans);
+                                    } 
+                                } else {
+                                    System.out.println("P(" + s[i][j] + "-> " + s[i+1][j]
+                                        + ") = " + transProb[k]);
+                                }
+                                break;
+                            case 1 :
+                                if(transProb[k] == 0) {
+                                    if(!selfTransFlag) {
+                                        selfTransFlag = true;
+                                        System.out.println("P(" + s[i][j] + "-> " + s[i][j]
+                                        + ") = " + selfTrans);
+                                    } 
+                                } else {
+                                    System.out.println("P(" + s[i][j] + "-> " + s[i][j+1]
+                                        + ") = " + transProb[k]);
+                                }
+                                break;
+                            case 2 : 
+                                if(transProb[k] == 0) {
+                                    if(!selfTransFlag) {
+                                        selfTransFlag = true;
+                                        System.out.println("P(" + s[i][j] + "-> " + s[i][j]
+                                        + ") = " + selfTrans);
+                                    } 
+                                } else {
+                                    System.out.println("P(" + s[i][j] + "-> " + s[i-1][j]
+                                        + ") = " + transProb[k]);
+                                }
+                                break;
+                            case 3 :
+                                if(transProb[k] == 0) {
+                                    if(!selfTransFlag) {
+                                        selfTransFlag = true;
+                                        System.out.println("P(" + s[i][j] + "-> " + s[i][j]
+                                        + ") = " + selfTrans);
+                                    } 
+                                } else {
+                                    System.out.println("P(" + s[i][j] + "-> " + s[i][j-1]
+                                        + ") = " + transProb[k]);
+                                }
+                                break;
+                        }
+                    }
                     
                 }
             }
