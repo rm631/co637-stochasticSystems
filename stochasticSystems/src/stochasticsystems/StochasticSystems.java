@@ -14,6 +14,8 @@ public class StochasticSystems {
     
     /**
      * @param args the command line arguments
+     * http://www.easysurf.cc/fract2.htm
+     * https://www.draw.io/
      */
     public static void main(String[] args)
     {   
@@ -588,10 +590,13 @@ public class StochasticSystems {
                 return 0;
             case 1 :
                 return (1.0 / 6.0);
+                //return (1.0 / 9.0);
             case 2 :
                 return (2.0 / 6.0);
+                //return (1.0 / 9.0);
             case 3 : 
                 return (3.0 / 6.0);
+                //return (1.0 / 9.0);
             case 4 : // row 4 is a ghost state row
                 return 0;
             default : // if somehow a number out of this range is passed, then we definitely
@@ -639,13 +644,11 @@ public class StochasticSystems {
                                 turtleBCoords[0][1] = y;
                                 turtleB = s[turtleBCoords[0][0]][turtleBCoords[0][1]];
                                 
-                                //accProb[k] = ;
                                 if(turtleB == -1) {
                                     // we never want to go into a ghost state so pi(b) will be 0
                                     accProb[k] = accProbTask2(occupationalProb(x), 0.0);
                                 } else {
-                                    // else the states share the 1/9 chance to be occupied
-                                    accProb[k] = accProbTask2(occupationalProb(x), occupationalProb(x+1));
+                                    accProb[k] = accProbTask2(occupationalProb(x), occupationalProb((x+1)));
                                 }
                                 
                                 transProb[k] = (accProb[k] * choiceProb);
@@ -685,8 +688,7 @@ public class StochasticSystems {
                                     // we never want to go into a ghost state so pi(b) will be 0
                                     accProb[k] = accProbTask2(occupationalProb(x), 0.0);
                                 } else {
-                                    // else the states share the 1/9 chance to be occupied
-                                    accProb[k] = accProbTask2(occupationalProb(x), occupationalProb(x-1));
+                                    accProb[k] = accProbTask2(occupationalProb(x), occupationalProb((x-1)));
                                 }
                                 
                                 transProb[k] = (accProb[k] * choiceProb);
@@ -724,17 +726,21 @@ public class StochasticSystems {
                     
                     double selfTrans = (1 - sum);
                     
-                    boolean selfTransFlag = false;
+                    if(selfTrans != 0) {
+                        System.out.println("P(" + s[i][j] + "-> " + s[i][j] + ") = " + selfTrans);
+                    }
+                    
+                    //boolean selfTransFlag = false;
                     //if(selfTrans == 0) { // no self transition
                     for(int k = 0; k < transProb.length; k++) {
                         switch(k) {
                             case 0 :
                                 if(transProb[k] == 0) {
-                                    if(!selfTransFlag) {
+                                    /*if(!selfTransFlag) {
                                         selfTransFlag = true;
                                         System.out.println("P(" + s[i][j] + "-> " + s[i][j]
                                         + ") = " + selfTrans);
-                                    } 
+                                    } */
                                 } else {
                                     System.out.println("P(" + s[i][j] + "-> " + s[i+1][j]
                                         + ") = " + transProb[k]);
@@ -742,11 +748,11 @@ public class StochasticSystems {
                                 break;
                             case 1 :
                                 if(transProb[k] == 0) {
-                                    if(!selfTransFlag) {
+                                    /*if(!selfTransFlag) {
                                         selfTransFlag = true;
                                         System.out.println("P(" + s[i][j] + "-> " + s[i][j]
                                         + ") = " + selfTrans);
-                                    } 
+                                    } */
                                 } else {
                                     System.out.println("P(" + s[i][j] + "-> " + s[i][j+1]
                                         + ") = " + transProb[k]);
@@ -754,11 +760,11 @@ public class StochasticSystems {
                                 break;
                             case 2 : 
                                 if(transProb[k] == 0) {
-                                    if(!selfTransFlag) {
+                                    /*if(!selfTransFlag) {
                                         selfTransFlag = true;
                                         System.out.println("P(" + s[i][j] + "-> " + s[i][j]
                                         + ") = " + selfTrans);
-                                    } 
+                                    } */
                                 } else {
                                     System.out.println("P(" + s[i][j] + "-> " + s[i-1][j]
                                         + ") = " + transProb[k]);
@@ -766,11 +772,11 @@ public class StochasticSystems {
                                 break;
                             case 3 :
                                 if(transProb[k] == 0) {
-                                    if(!selfTransFlag) {
+                                    /*if(!selfTransFlag) {
                                         selfTransFlag = true;
                                         System.out.println("P(" + s[i][j] + "-> " + s[i][j]
                                         + ") = " + selfTrans);
-                                    } 
+                                    } */
                                 } else {
                                     System.out.println("P(" + s[i][j] + "-> " + s[i][j-1]
                                         + ") = " + transProb[k]);
