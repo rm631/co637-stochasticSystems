@@ -673,7 +673,13 @@ public class StochasticSystems {
         int turtleB = 1; // state b
         
         for(int n = 0; n < 10000; n++) { // number of repetitions
-            for(int m = 0; m < 4; m++) { // number of time steps
+            // reset a
+            turtleACoords[0][0] = 1;
+            turtleACoords[0][1] = 1;
+            turtleA = 1;
+            for(int m = 0; m < 3; m++) { // number of time steps, ignoring step 0 (since its just 1)
+                System.out.println("Time step: " + m);
+                
                 int k = 0; // number of transitions (including self)
                 
                 double[] accProb = new double[4]; 
@@ -757,7 +763,7 @@ public class StochasticSystems {
                 
                 double sum = 0;
                 for(int i = 0; i < transProb.length; i++) {
-                    sum += transProb[k];
+                    sum += transProb[i];
                 }
                 
                 /**
@@ -765,7 +771,7 @@ public class StochasticSystems {
                  */
                 
                 double selfTrans = (1 - sum);
-                
+                //System.out.println("selfTrans = " + selfTrans);
                 if(selfTrans != 0) { // if there is a self transition...
                     k++;
                     //System.out.println("P(" + s[i][j] + "-> " + s[i][j] + ") = " + selfTrans);
@@ -799,87 +805,106 @@ public class StochasticSystems {
                             break;
                     }
                 }
-                
+                //System.out.println("k: " + k);
                 // initialse t and put the transition value into it
                 double[] t = new double[k+1];
                 t[0] = 0;
-                t[1] = selfTrans;
-                
-                for(int i = 2; i < t.length; i++) {
-                    System.out.println("i: " + i + "transProb: " + transProb[i]);
-                    
-                    if(transProb[i] != 0) {
-                        System.out.println("WAAAA " + transProb[i]);
-                        System.out.println(i);
-                        t[i] = transProb[i];
-                        System.out.println(t[i]);
+                //t[1] = selfTrans;
+                //System.out.println("tlength" + t.length);
+                //System.out.println("transProb.length" + transProb.length);
+                for(int i = 1; i < t.length; i++) {
+                    if(transProb.length >= i) {
+                        if(transProb[i-1] != 0) {
+                            //System.out.println("WAAAA " + transProb[i-1]);
+                            t[i] = transProb[i-1];
+                        }
                     }
-                    
                 }
                 
+                if(selfTrans != 0) { t[t.length-1] = selfTrans; }
+                
                 Arrays.sort(t); // sort t in ascending order
+                for(int i=1; i < t.length/2; i++){ // flip the array into descending
+                    double temp = t[i];
+                    t[i] = t[t.length-i];
+                    t[t.length-i] = temp;
+                }
                 
                 double r = rng.nextDouble(); // r is between 0-1
-                double next = 0; // where we want to go next
+                double next = -1; // where we want to go next
                 
                 double tSum = 0;
                 for(int i = 0; i < t.length; i++) {
                     if((tSum < r) && (r <= (tSum + t[i]))) {
                         next = t[i];
-                        System.out.println("2) t[" + i +"]" + ": " + t[i]);
+                        //System.out.println("2) t[" + i +"]" + ": " + t[i]);
                         i = t.length; // end the loop after this iteration..
                     } else {
-                        System.out.println("1) t[" + i +"]" + ": " + t[i]);
+                        //System.out.println("1) t[" + i +"]" + ": " + t[i]);
                         tSum += t[i];
-                        System.out.println("tSum: " + tSum);
+                        //System.out.println("tSum: " + tSum);
                     }
                 }
                 
+                int nextCounter = 0; // since the same values are ordered randomly, pick one randomly
+                ArrayList<Integer> nextTrans = new ArrayList<Integer>();
                 // find next in the transProb array
                 // so that we know what the next position actually is
                 for(int i = 0; i < transProb.length; i++) {
-                    System.out.println("next: " + next + " | transProb" + transProb[i]);
+                    //System.out.println("next: " + next + " | transProb" + transProb[i]);
                     if(next == transProb[i]) {
-                        System.out.println("next: " + next);
-                        System.out.println("transProb[" + i + "]: " + transProb[i]);
+                        //System.out.println("next: " + next);
+                        //System.out.println("transProb[" + i + "]: " + transProb[i]);
                         //System.out.println("next has matched transprob!");
-                        int x = turtleACoords[0][0];
-                        int y = turtleACoords[0][1];
-                        System.out.println("x: " + x + " | y: " + y);
-                        switch(i) {
-                            case 0 :
-                                turtleACoords[0][0] = x+1;
-                                turtleACoords[0][1] = y;
-                                turtleA = s[turtleACoords[0][0]][turtleACoords[0][1]];
-                                System.out.println("case0, turtleA: " + turtleA);
-
-                                break;
-                            case 1 :
-                                turtleACoords[0][0] = x;
-                                turtleACoords[0][1] = y+1;
-                                turtleA = s[turtleACoords[0][0]][turtleACoords[0][1]];
-                                System.out.println("case1, turtleA: " + turtleA);
-
-                                break;
-                            case 2 :
-                                turtleACoords[0][0] = x-1;
-                                turtleACoords[0][1] = y;
-                                turtleA = s[turtleACoords[0][0]][turtleACoords[0][1]];
-                                System.out.println("case2, turtleA: " + turtleA);
-
-                                break;
-                            case 3 : 
-                                turtleACoords[0][0] = x;
-                                turtleACoords[0][1] = y-1;
-                                turtleA = s[turtleACoords[0][0]][turtleACoords[0][1]];
-                                System.out.println("case3, turtleA: " + turtleA);
-                                break;
-                        }
+                        nextCounter++;
+                        nextTrans.add(i);
                     }
                 }
-                System.out.println("turtleA: " + turtleA);
-                count[turtleA] += 1;
+                int moveTo = -1;
+                if(nextCounter != 0) { 
+                    int random = rng.nextInt(nextCounter);
+                    moveTo = nextTrans.get(random); 
+                }
+                int x = turtleACoords[0][0];
+                int y = turtleACoords[0][1];
+                System.out.println("x: " + x + " | y: " + y);
+                
+                switch(moveTo) {
+                    case 0 :
+                        turtleACoords[0][0] = x+1;
+                        turtleACoords[0][1] = y;
+                        turtleA = s[turtleACoords[0][0]][turtleACoords[0][1]];
+                        System.out.println("case0, turtleA: " + turtleA);
+
+                        break;
+                    case 1 :
+                        turtleACoords[0][0] = x;
+                        turtleACoords[0][1] = y+1;
+                        turtleA = s[turtleACoords[0][0]][turtleACoords[0][1]];
+                        System.out.println("case1, turtleA: " + turtleA);
+
+                        break;
+                    case 2 :
+                        turtleACoords[0][0] = x-1;
+                        turtleACoords[0][1] = y;
+                        turtleA = s[turtleACoords[0][0]][turtleACoords[0][1]];
+                        System.out.println("case2, turtleA: " + turtleA);
+
+                        break;
+                    case 3 : 
+                        turtleACoords[0][0] = x;
+                        turtleACoords[0][1] = y-1;
+                        turtleA = s[turtleACoords[0][0]][turtleACoords[0][1]];
+                        System.out.println("case3, turtleA: " + turtleA);
+                        break;
+                    default :
+                        // this is a self transition, do nothing..
+                        break;
+                }
+                
             }
+            System.out.println("turtleA: " + turtleA);
+            count[turtleA] += 1;
         }
         int n = 10000;
         //for(int i = 0; i < count.length; i++) {
